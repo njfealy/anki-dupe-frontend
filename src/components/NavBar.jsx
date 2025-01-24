@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 import user from "../assets/user.png";
 import settings from "../assets/settings.png";
@@ -13,7 +13,6 @@ const NavBar = () => {
   const auth = useSelector((state) => state.auth.isAuth);
 
   const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef(null);
 
   const location = useLocation();
 
@@ -24,8 +23,6 @@ const NavBar = () => {
 
   const logoutHandler = () => {
     dispatch(authActions.logout());
-    console.log("logout");
-    console.log(auth);
     setIsOpen(false);
   };
 
@@ -38,7 +35,6 @@ const NavBar = () => {
 
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
-    console.log("click outside!");
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
@@ -46,8 +42,8 @@ const NavBar = () => {
 
   return (
     <>
-      <nav className="flex justify-between bg-white">
-        <div className="flex gap-3 items-end mx-5 my-4">
+      <nav className="flex justify-between bg-white relative z-10">
+        <div className="flex gap-3 items-end mx-5 mt-4 mb-2">
           <NavLink
             to="/"
             className="text-3xl font-bold text-blue-700 border-b-2 border-transparent"
@@ -79,18 +75,24 @@ const NavBar = () => {
               </NavLink>
             ) : (
               <div>
-                <img
-                  src={user}
-                  className="max-h-5 max-w-5 m-3 hover:opacity-50 transition duration:200"
-                  onClick={toggleDropdown}
-                />
+                <div className="flex items-center w-9">
+                  <img
+                    src={user}
+                    className={`max-h-5 max-w-5 m-3 hover:opacity-50 transition duration-300 ${
+                      isOpen ? "transform -translate-x-24 ml-0 ease-in-out" : ""
+                    }`}
+                    onClick={toggleDropdown}
+                  />
+                  {isOpen && <div className="absolute right-10"></div>}
+                </div>
+
                 {isOpen && (
                   <ul
                     id="dropdown-menu"
                     onClick={(event) => event.stopPropagation()}
-                    className="z-10 absolute right-0 top-16 w-48 bg-white rounded-l-lg py-3 animate-slideDown"
+                    className="absolute -right-5 top-16 w-48 bg-white rounded-l-lg py-3 animate-fadeIn transition"
                   >
-                    <li className="font-semibold p-3 flex items-center hover:bg-gray-300 transition duration:200">
+                    <li className="font-semibold p-3 flex items-center hover:bg-gray-300 transition duration-200">
                       <img src={settings} className="size-4 ml-3" />
                       <NavLink to="/settings" className="px-3">
                         Settings
@@ -98,7 +100,7 @@ const NavBar = () => {
                     </li>
                     <li
                       onClick={logoutHandler}
-                      className="font-semibold p-3 flex items-center hover:bg-gray-300 transition duration:200"
+                      className="font-semibold p-3 flex items-center hover:bg-gray-300 transition duration-200"
                     >
                       <img src={logout} className="size-3.5 ml-3" />
                       <button className="px-3">Log out</button>
