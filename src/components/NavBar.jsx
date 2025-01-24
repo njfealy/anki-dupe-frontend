@@ -1,10 +1,10 @@
 import { useSelector, useDispatch } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import user from "../assets/user.png";
-import settings from "../assets/settings.png"
+import settings from "../assets/settings.png";
 import logout from "../assets/logout.png";
 import { authActions } from "../store";
 
@@ -13,11 +13,13 @@ const NavBar = () => {
   const auth = useSelector((state) => state.auth.isAuth);
 
   const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
 
   const location = useLocation();
 
   const toggleDropdown = () => {
-    setIsOpen(!isOpen);
+    event.stopPropagation();
+    setIsOpen((open) => !open);
   };
 
   const logoutHandler = () => {
@@ -26,6 +28,21 @@ const NavBar = () => {
     console.log(auth);
     setIsOpen(false);
   };
+
+  const handleClickOutside = (event) => {
+    const dropdown = document.getElementById("dropdown-menu");
+    if (dropdown && !dropdown.contains(event.target)) {
+      setIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+    console.log("click outside!");
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -68,10 +85,16 @@ const NavBar = () => {
                   onClick={toggleDropdown}
                 />
                 {isOpen && (
-                  <ul className="z-10 absolute right-0 top-16 w-48 bg-white rounded-l-lg py-3">
+                  <ul
+                    id="dropdown-menu"
+                    onClick={(event) => event.stopPropagation()}
+                    className="z-10 absolute right-0 top-16 w-48 bg-white rounded-l-lg py-3 animate-slideDown"
+                  >
                     <li className="font-semibold p-3 flex items-center hover:bg-gray-300 transition duration:200">
                       <img src={settings} className="size-4 ml-3" />
-                      <button className="px-3">Settings</button>
+                      <NavLink to="/settings" className="px-3">
+                        Settings
+                      </NavLink>
                     </li>
                     <li
                       onClick={logoutHandler}
