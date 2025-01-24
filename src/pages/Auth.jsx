@@ -17,7 +17,6 @@ const AuthPage = () => {
   const submitHandler = (event) => {
     event.preventDefault();
     dispatch(authActions.login());
-    console.log("login");
     navigate("/");
   };
 
@@ -34,7 +33,7 @@ const AuthPage = () => {
 
   return (
     <>
-      {!auth ? (
+      {!auth && (
         <div className="flex justify-center">
           <form
             onSubmit={submitHandler}
@@ -76,7 +75,7 @@ const AuthPage = () => {
                   onClick={passVisToggleHandler}
                   className="h-full box-content px-3 absolute inset-y-0 right-0 flex items-center size-5 opacity-60 rounded-r-lg hover:bg-gray-300 transition duration-200"
                 >
-                  <img src={passwordVisible} className="" />
+                  <img src={passwordVisible} />
                 </button>
               </div>
             </div>
@@ -89,8 +88,6 @@ const AuthPage = () => {
             </button>
           </form>
         </div>
-      ) : (
-        navigate("/")
       )}
     </>
   );
