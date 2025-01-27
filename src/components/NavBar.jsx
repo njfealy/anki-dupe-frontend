@@ -57,8 +57,7 @@ const NavBar = () => {
             className="rounded px-4 pt-4 font-semibold text-gray-600
             after:block after:border-b-2 after:border-gray-400
             after:scale-x-0 transition after:duration-200 after:ease-out
-            hover:after:scale-x-150 hover:bg-gray-200
-            "
+            hover:after:scale-x-150 hover:bg-gray-200"
           >
             Study
           </NavLink>
