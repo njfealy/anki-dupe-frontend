@@ -46,9 +46,9 @@ const NavBar = () => {
         <div className="flex gap-3 items-end mx-5 mt-4 mb-2">
           <NavLink
             to="/"
-            className="text-3xl font-bold text-blue-700 border-b-2 border-transparent"
+            className="text-3xl font-bold text-blue-700 mr-3 border-b-2 border-transparent"
           >
-            Quizlet Dupe
+            Anki Dupe
           </NavLink>
 
           <NavLink
@@ -60,6 +60,17 @@ const NavBar = () => {
             hover:after:scale-x-150 hover:bg-gray-200"
           >
             Study
+          </NavLink>
+
+          <NavLink
+            to="/decks"
+            // className={({ isActive }) => (isActive ? "text-slate-500" : "")}
+            className="rounded px-4 pt-4 font-semibold text-gray-600
+            after:block after:border-b-2 after:border-gray-400
+            after:scale-x-0 transition after:duration-200 after:ease-out
+            hover:after:scale-x-150 hover:bg-gray-200"
+          >
+            Decks
           </NavLink>
         </div>
 

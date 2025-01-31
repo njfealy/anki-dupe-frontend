@@ -7,6 +7,7 @@ import "./App.css";
 import RootLayout from "./pages/Root";
 import ErrorPage from "./pages/Error";
 import DeckPage from "./pages/DeckPage";
+import DecksPage from "./pages/DecksPage";
 
 const router = createBrowserRouter([
   {
@@ -17,7 +18,8 @@ const router = createBrowserRouter([
       { path: "/", element: <HomePage /> },
       { path: "/auth", element: <AuthPage /> },
       { path: "/study", element: <StudyPage /> },
-      { path: "/study/:deckId", element: <DeckPage />},
+      { path: "/study/:deckId", element: <DeckPage /> },
+      { path: "/decks", element: <DecksPage /> },
       { path: "/settings", element: <SettingsPage /> },
     ],
   },
