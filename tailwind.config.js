@@ -9,6 +9,7 @@ export default {
       animation: {
         slideDown: "slideDown 1s ease-in-out",
         fadeIn: "fadeIn 0.2s ease-in-out",
+        open: "open 0.2s ease-in-out",
       },
       keyframes: {
         slideDown: {
@@ -19,6 +20,10 @@ export default {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
+        open: {
+          "0%": { transform: "scaleY(0) translateY(-100)" },
+          "100%": { transform: "scaleY(100%) translateY(0)" },
+        }
       },
     },
   },
