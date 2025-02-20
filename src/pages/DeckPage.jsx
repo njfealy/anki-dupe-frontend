@@ -1,5 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 import DeleteDeckModal from "../components/DeleteDeckModal";
 
@@ -18,11 +20,14 @@ const DeckPage = () => {
 
   const dialog = useRef(null);
   const navigate = useNavigate();
+  const auth = useSelector((state) => state.auth);
 
   useEffect(() => {
+    console.log(auth);
+    console.log(deck)
     const fetchDeck = async () => {
       const response = await fetch(
-        "http://localhost:3000/decks/deck/" + params.deckId
+        "http://localhost:3000/deck/" + params.deckId
       );
       const resData = await response.json();
       setDeck(resData.deck);
@@ -33,23 +38,27 @@ const DeckPage = () => {
 
   const deleteDeckHandler = async () => {
     const response = await fetch(
-      "http://localhost:3000/decks/deck/" + params.deckId + "/delete",
+      "http://localhost:3000/deck/" + params.deckId,
       {
         method: "DELETE",
+        credentials: "include",
       }
     );
-    const resData = await response.json();
-    console.log(resData);
-    navigate("/decks")
+    //if (response.ok) {
+      const resData = await response.json();
+      console.log(resData);
+      navigate("/library");
+    //}
   };
 
   const addCardHandler = async () => {
     const body = JSON.stringify({ front, back });
     console.log(body);
     const response = await fetch(
-      `http://localhost:3000/decks/deck/${params.deckId}/createCard`,
+      `http://localhost:3000/deck/${params.deckId}/card`,
       {
         method: "POST",
+        credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -66,16 +75,16 @@ const DeckPage = () => {
   };
 
   const deleteCardHandler = async (cardId) => {
-    const body = JSON.stringify({ cardId });
+    console.log(params.deckId, cardId)
     const response = await fetch(
-      `http://localhost:3000/decks/deck/${params.deckId}/deleteCard`,
+      `http://localhost:3000/deck/${params.deckId}/cards/${cardId}`,
       {
         method: "DELETE",
+        credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: body,
       }
     );
     const resData = await response.json();
@@ -93,12 +102,12 @@ const DeckPage = () => {
 
   const frontChangeHandler = (event) => {
     setFront(event.target.value);
-    console.log(front)
+    console.log(front);
   };
 
   const backChangeHandler = (event) => {
     setBack(event.target.value);
-    console.log(back)
+    console.log(back);
   };
 
   const showActionMenuHandler = (event) => {
@@ -142,52 +151,72 @@ const DeckPage = () => {
       />
       <div className="flex flex-col px-24 py-8">
         <div className="flex justify-between items-center my-2">
-          <div className="flex items-end gap-3">
-            <h1 className="text-3xl font-semibold text-gray-700">
-              {loading ? "Loading..." : deck.name}
-            </h1>
-            <h2 className="text-gray-600">
-              {deck.size ? deck.size : 0} card{deck.size != 1 && "s"}
-            </h2>
+          <div className="flex">
+            <div className="flex items-end gap-3">
+              <h1 className="text-3xl font-semibold text-gray-700">
+                {loading ? "Loading..." : deck.name}
+              </h1>
+              <h2 className="text-gray-600">
+                {deck.size ? deck.size : 0} card{deck.size != 1 && "s"}
+              </h2>
+            </div>
           </div>
 
           <div className="flex gap-1">
-            {!addMenu && (
-              <button
-                onClick={addMenuHandler}
-                className="flex bg-blue-600 p-1 rounded-md size-6 hover:bg-violet-700 duration-200"
-              >
-                <img src={plus} className="size-4 invert" />
-              </button>
-            )}
-            <button
-              onClick={showActionMenuHandler}
-              className="bg-white size-6 rounded-md font-semibold text-gray-700 hover:bg-gray-300 transition duration-200"
-            >
-              ...
-            </button>
-            {actionMenu && (
-              <div
-                id="action-menu"
-                onClick={(event) => event.stopPropagation()}
-                className="absolute right-5 bg-white rounded-lg"
-              >
-                <ul className="py-3">
-                  <li>
+            {!loading && (
+              <>
+                {deck.creator._id === auth._id ? (
+                  <>
+                    {!addMenu && (
+                      <button
+                        onClick={addMenuHandler}
+                        className="flex bg-blue-600 p-1 rounded-md size-6 hover:bg-violet-700 duration-200"
+                      >
+                        <img src={plus} className="size-4 invert" />
+                      </button>
+                    )}
                     <button
-                      onClick={deleteModalHandler}
-                      className="w-full font-semibold text-red-500 hover:bg-red-500 hover:text-white px-3 transition duration-200"
+                      onClick={showActionMenuHandler}
+                      className="bg-white size-6 rounded-md font-semibold text-gray-700 hover:bg-gray-300 transition duration-200"
                     >
-                      Delete
+                      ...
                     </button>
-                  </li>
-                  <li>
-                    <button className="w-full font-semibold text-gray-500 hover:bg-gray-300 transition duration-200">
-                      Settings
-                    </button>
-                  </li>
-                </ul>
-              </div>
+                    {actionMenu && (
+                      <div
+                        id="action-menu"
+                        onClick={(event) => event.stopPropagation()}
+                        className="absolute right-5 bg-white rounded-lg"
+                      >
+                        <ul className="py-3">
+                          <li>
+                            <button
+                              onClick={deleteModalHandler}
+                              className="w-full font-semibold text-red-500 hover:bg-red-500 hover:text-white px-3 transition duration-200"
+                            >
+                              Delete
+                            </button>
+                          </li>
+                          <li>
+                            <button className="w-full font-semibold text-gray-500 hover:bg-gray-300 transition duration-200">
+                              Settings
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link to={"/user/"+deck.creator._id} className="flex gap-2 items-end bg-gray-300 p-2 rounded-xl">
+                    <img
+                      src={deck.creator.picture}
+                      className="size-6 rounded-2xl"
+                    />
+                    <div className="font-semibold text-gray-600">
+                      {deck.creator.username}
+                    </div>
+                  </Link>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -250,15 +279,19 @@ const DeckPage = () => {
                         </div>
 
                         <div className="flex flex-col justify-end p-2 space-y-1">
-                          <button className="bg-gray-300 text-gray-600 font-semibold px-2 rounded-lg hover:bg-gray-400 transition duration-200">
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => deleteCardHandler(card._id)}
-                            className="bg-red-500 text-white font-semibold px-2 rounded-lg hover:bg-red-700 transition duration-200"
-                          >
-                            Delete
-                          </button>
+                          {deck.creator._id == auth._id && (
+                            <>
+                              <button className="bg-gray-300 text-gray-600 font-semibold px-2 rounded-lg hover:bg-gray-400 transition duration-200">
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => deleteCardHandler(card._id)}
+                                className="bg-red-500 text-white font-semibold px-2 rounded-lg hover:bg-red-700 transition duration-200"
+                              >
+                                Delete
+                              </button>
+                            </>
+                          )}
                         </div>
                       </li>
                     );
