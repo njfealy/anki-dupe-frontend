@@ -23,10 +23,12 @@ export default {
         open: {
           "0%": { transform: "scaleY(0) translateY(-100)" },
           "100%": { transform: "scaleY(100%) translateY(0)" },
-        }
+        },
+      },
+      fontFamily: {
+        roboto: ["Roboto", "serif"],
       },
     },
   },
-  plugins: [
-  ],
+  plugins: [],
 };
