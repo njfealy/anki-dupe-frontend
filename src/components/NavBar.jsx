@@ -6,7 +6,7 @@ const NavBar = () => {
   
   return (
     <>
-      <nav className="flex justify-between bg-white relative z-10">
+      <nav className="flex justify-between bg-white fixed w-full z-10">
         <div className="flex gap-3 items-end mx-5 mt-4 mb-2">
           <NavLink
             to="/"
