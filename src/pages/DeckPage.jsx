@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 import DeleteDeckModal from "../components/DeleteDeckModal";
+import Card from "../components/Card";
 
 import plus from "../assets/plus.png";
 import load from "../assets/loading.png";
@@ -12,9 +13,12 @@ const DeckPage = () => {
   const params = useParams();
   const [loading, setLoading] = useState(true);
   const [deck, setDeck] = useState({});
+  const [deckName, setDeckName] = useState("");
   const [addMenu, setAddMenu] = useState(false);
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
+  const [renaming, setRenaming] = useState(false);
+  const [nameValid, setNameValid] = useState(false);
   const [actionMenu, setActionMenu] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
 
@@ -24,13 +28,14 @@ const DeckPage = () => {
 
   useEffect(() => {
     console.log(auth);
-    console.log(deck)
+    console.log(deck);
     const fetchDeck = async () => {
       const response = await fetch(
         "http://localhost:3000/deck/" + params.deckId
       );
       const resData = await response.json();
       setDeck(resData.deck);
+      setDeckName(resData.deck.name);
       setLoading(false);
     };
     if (loading) fetchDeck();
@@ -45,9 +50,9 @@ const DeckPage = () => {
       }
     );
     //if (response.ok) {
-      const resData = await response.json();
-      console.log(resData);
-      navigate("/library");
+    const resData = await response.json();
+    console.log(resData);
+    navigate("/library");
     //}
   };
 
@@ -75,21 +80,37 @@ const DeckPage = () => {
   };
 
   const deleteCardHandler = async (cardId) => {
-    console.log(params.deckId, cardId)
+    console.log(params.deckId, cardId);
     const response = await fetch(
       `http://localhost:3000/deck/${params.deckId}/cards/${cardId}`,
       {
         method: "DELETE",
         credentials: "include",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
       }
     );
     const resData = await response.json();
     console.log(resData);
     setLoading(true);
+  };
+
+  const editCardHandler = async (newCard) => {
+    console.log(newCard);
+    const body = JSON.stringify({
+      newFront: newCard.newFront,
+      newBack: newCard.newBack,
+    });
+    const response = await fetch(
+      `http://localhost:3000/deck/${newCard.deckId}/cards/${newCard.cardId}`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body,
+      }
+    );
   };
 
   const addMenuHandler = () => {
@@ -141,6 +162,42 @@ const DeckPage = () => {
     setDeleteModal(false);
   };
 
+  const renameHandler = () => {
+    setDeckName(deck.name);
+    setRenaming(true);
+    setNameValid(true)
+  };
+
+  const changeNameHandler = (event) => {
+    console.log(event.target.value)
+    setDeckName(event.target.value);
+    if (event.target.value.length > 0) return setNameValid(true);
+    console.log("not valid")
+    return setNameValid(false);
+  };
+
+  const submitRenameHandler = () => {
+    if(!nameValid) return;
+    const body = JSON.stringify({
+      newName: deckName,
+    });
+    const response = fetch("http://localhost:3000/deck/" + params.deckId, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body,
+    });
+    setRenaming(false);
+    setLoading(true);
+  };
+
+  const cancelRenameHandler = () => {
+    setRenaming(false);
+  };
+
   return (
     <>
       <DeleteDeckModal
@@ -149,13 +206,37 @@ const DeckPage = () => {
         onConfirm={deleteDeckHandler}
         onCancel={cancelModalHandler}
       />
-      <div className="flex flex-col px-24 py-8">
+      <div className="flex flex-col pt-24 w-[1000px] justify-self-center">
         <div className="flex justify-between items-center my-2">
-          <div className="flex">
-            <div className="flex items-end gap-3">
-              <h1 className="text-3xl font-semibold text-gray-700">
-                {loading ? "Loading..." : deck.name}
-              </h1>
+          <div className="flex ">
+            <div className="flex items-end gap-3 ">
+              {!renaming ? (
+                <h1 className="text-3xl font-semibold text-gray-700">
+                  {loading ? "Loading..." : deck.name}
+                </h1>
+              ) : (
+                <div className="flex gap-1 pr-3">
+                  <input
+                    value={deckName}
+                    onChange={changeNameHandler}
+                    spellCheck="false"
+                    className="text-3xl border-none focus:outline-none px-3 rounded-lg text-gray-800 font-semibold"
+                  />
+                  <button
+                    onClick={submitRenameHandler}
+                    className={"px-2  font-semibold rounded-md  duration-200 "+(nameValid ? "bg-blue-600 text-white hover:bg-violet-700" : "bg-white text-gray-300")}
+                    disabled={!nameValid}
+                  >
+                    Rename
+                  </button>
+                  <button
+                    onClick={cancelRenameHandler}
+                    className="bg-gray-300 px-2 text-white font-semibold rounded-md hover:bg-gray-400 duration-200"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
               <h2 className="text-gray-600">
                 {deck.size ? deck.size : 0} card{deck.size != 1 && "s"}
               </h2>
@@ -185,9 +266,22 @@ const DeckPage = () => {
                       <div
                         id="action-menu"
                         onClick={(event) => event.stopPropagation()}
-                        className="absolute right-5 bg-white rounded-lg"
+                        className="absolute translate-x-14 bg-white rounded-lg"
                       >
                         <ul className="py-3">
+                          <li>
+                            <button
+                              onClick={renameHandler}
+                              className="w-full font-semibold text-gray-500 hover:bg-gray-300 transition duration-200"
+                            >
+                              Rename
+                            </button>
+                          </li>
+                          {/* <li>
+                            <button className="w-full font-semibold text-gray-500 hover:bg-gray-300 transition duration-200">
+                              Settings
+                            </button>
+                          </li> */}
                           <li>
                             <button
                               onClick={deleteModalHandler}
@@ -196,17 +290,15 @@ const DeckPage = () => {
                               Delete
                             </button>
                           </li>
-                          <li>
-                            <button className="w-full font-semibold text-gray-500 hover:bg-gray-300 transition duration-200">
-                              Settings
-                            </button>
-                          </li>
                         </ul>
                       </div>
                     )}
                   </>
                 ) : (
-                  <Link to={"/user/"+deck.creator._id} className="flex gap-2 items-end bg-gray-300 p-2 rounded-xl">
+                  <Link
+                    to={"/user/" + deck.creator._id}
+                    className="flex gap-2 items-end bg-gray-300 p-2 rounded-xl"
+                  >
                     <img
                       src={deck.creator.picture}
                       className="size-6 rounded-2xl"
@@ -222,7 +314,7 @@ const DeckPage = () => {
         </div>
 
         {addMenu && (
-          <div className="flex justify-between bg-white rounded-xl p-3 h-32">
+          <div className={`flex justify-between bg-white rounded-xl p-3 h-32`}>
             <div className="flex flex-1 justify-center">
               <textarea
                 placeholder="Front text"
@@ -268,41 +360,27 @@ const DeckPage = () => {
                         key={card._id}
                         className="flex justify-between bg-white rounded-xl p-3 h-32"
                       >
-                        <div className="flex flex-1 justify-center">
-                          <div className="flex-1 px-3 text-gray-700 font-semibold">
-                            {card.front}
-                          </div>
-                          <div className="bg-gray-200 w-[3px] rounded-xl"></div>
-                          <div className="flex-1 px-3 text-gray-700 font-semibold">
-                            {card.back}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col justify-end p-2 space-y-1">
-                          {deck.creator._id == auth._id && (
-                            <>
-                              <button className="bg-gray-300 text-gray-600 font-semibold px-2 rounded-lg hover:bg-gray-400 transition duration-200">
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => deleteCardHandler(card._id)}
-                                className="bg-red-500 text-white font-semibold px-2 rounded-lg hover:bg-red-700 transition duration-200"
-                              >
-                                Delete
-                              </button>
-                            </>
-                          )}
-                        </div>
+                        <Card
+                          card={card}
+                          deck={deck}
+                          auth={auth}
+                          onEdit={editCardHandler}
+                        />
                       </li>
                     );
                   })}
                 </div>
               ) : (
-                <div className="text-lg text-gray-500">This deck is empty.</div>
+                <div className="text-center">
+                  <p className="text-2xl text-gray-800">This deck is empty.</p>
+                  <p className="text-lg text-gray-700">
+                    Click the plus sign to add a card.
+                  </p>
+                </div>
               )}
             </ul>
           ) : (
-            <div className="flex size-full flex-col items-center">
+            <div className="flex h-96 flex-col items-center justify-center">
               <img src={load} className="size-24 animate-spin opacity-15" />
               <div className="text-gray-700">Loading...</div>
             </div>
